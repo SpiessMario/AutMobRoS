@@ -24,9 +24,9 @@ int main(int argc, char **argv)
 
     log.info() << "HELLO EEROS!!";
 
-    // log.info() << "Initializing hardware...";
-    // eeros::hal::HAL& hal = eeros::hal::HAL::instance();
-    // hal.readConfigFromFile(&argc, argv);
+    log.info() << "Initializing hardware...";
+    eeros::hal::HAL& hal = eeros::hal::HAL::instance();
+    hal.readConfigFromFile(&argc, argv);
 
     log.info() << "Initializing control system...";
     ControlSystem cs(dt);
