@@ -16,18 +16,18 @@ void signalHandler(int signum)
 
 int main(int argc, char **argv)
 {
-    const double dt = 0.001;
+    const double dt = 0.005;
     eeros::logger::Logger::setDefaultStreamLogger(std::cout);
     eeros::logger::Logger log = eeros::logger::Logger::getLogger();
 
-    log.info() << "Starting template project...";
+    log.info() << "Starting controller...";
 
     log.info() << "Initializing hardware...";
     eeros::hal::HAL& hal = eeros::hal::HAL::instance();
     hal.readConfigFromFile(&argc, argv);
 
     log.info() << "Initializing control system...";
-    ControlSystem cs(0.1);
+    ControlSystem cs(dt);
 
     log.info() << "Initializing safety system...";
     MyRobotSafetyProperties sp(cs, dt);

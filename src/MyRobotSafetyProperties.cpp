@@ -65,7 +65,6 @@ MyRobotSafetyProperties::MyRobotSafetyProperties(ControlSystem &cs, double dt)
     slSystemMoving.addEvent(abort, slBraking, kPublicEvent);
 
     // Add events to multiple safety levels
-    // addEventToAllLevelsBetween(lowerLevel, upperLevel, event, targetLevel, kPublicEvent/kPrivateEvent);
     addEventToAllLevelsBetween(slEmergency, slMotorPowerOn, abort, slShuttingDown, kPublicEvent);
     addEventToAllLevelsBetween(slSystemOn, slMotorPowerOn, emergency, slEmergency, kPublicEvent);
 
@@ -108,11 +107,12 @@ MyRobotSafetyProperties::MyRobotSafetyProperties(ControlSystem &cs, double dt)
 
     slStartingUp.setLevelAction([&](SafetyContext *privateContext) {
         cs.timedomain.start();
+        cs.fwKinOdom.enable();
         privateContext->triggerEvent(systemStarted);
     });
 
     slEmergency.setLevelAction([&](SafetyContext *privateContext) {
-        
+        cs.fwKinOdom.disable();
     });
 
     slEmergencyBraking.setLevelAction([&](SafetyContext *privateContext) {
@@ -121,24 +121,15 @@ MyRobotSafetyProperties::MyRobotSafetyProperties(ControlSystem &cs, double dt)
     });
 
     slSystemOn.setLevelAction([&, dt](SafetyContext *privateContext) {
-        /*if (slSystemOn.getNofActivations()*dt >= 1)   // wait 1 sec
-        {
-            privateContext->triggerEvent(powerOn);
-        }*/
+        cs.fwKinOdom.enable();
     });
 
     slMotorPowerOn.setLevelAction([&, dt](SafetyContext *privateContext) {
-        /*if (slMotorPowerOn.getNofActivations()*dt >= 5)   // wait 5 sec
-        {
-            privateContext->triggerEvent(startMoving);
-        }*/
+        cs.fwKinOdom.enable();
     });
 
     slSystemMoving.setLevelAction([&, dt](SafetyContext *privateContext) {
-        /*if (slSystemMoving.getNofActivations()*dt >= 5)   // wait 5 sec
-        {
-            privateContext->triggerEvent(stopMoving);
-        }*/
+        cs.fwKinOdom.enable();
     });
 
     // Define entry level

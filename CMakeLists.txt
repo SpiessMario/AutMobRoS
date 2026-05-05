@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5.1)
-project(implementedSequencer)   # MODIFY Project name
+project(ForwardKinematics)   # MODIFY Project name
 
 set(CMAKE_CXX_STANDARD 14)
 

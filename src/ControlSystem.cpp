@@ -1,29 +1,36 @@
 #include "ControlSystem.hpp"
 
 ControlSystem::ControlSystem(double dt)
-    : q1("quat1"), g(2.0), motorVoltageSetpoint(0.0), motor("motor1"),
+    : E1("enc1"),
+      E2("enc2"),
+      fwKinOdom(0.15),
       timedomain("Main time domain", dt, true)
 {
     // Name all blocks
-    q1.setName("q1");
-    g.setName("g");
-    motorVoltageSetpoint.setName("motorVoltageSetpoint");
-    motor.setName("motor");
+    E1.setName("E1");
+    E2.setName("E2");
+    E.setName("E");
+    Ed.setName("Ed");
+    fwKinOdom.setName("fwKinOdom");
 
     // Name all signals
-    q1.getOut().getSignal().setName("beta/half [rad]");
-    g.getOut().getSignal().setName("beta [rad]");
-    motorVoltageSetpoint.getOut().getSignal().setName("Motor voltage setpoint [V]");
+    E1.getOut().getSignal().setName("q1 [m]");
+    E2.getOut().getSignal().setName("q2 [m]");
+    E.getOut().getSignal().setName("q [m]");
+    E.getOut().getSignal().setName("qd [m/s]");
 
     // Connect signals
-    g.getIn().connect(q1.getOut());
-    motor.getIn().connect(motorVoltageSetpoint.getOut());
+    E.getIn(0).connect(E1.getOut());
+    E.getIn(1).connect(E2.getOut());
+    Ed.getIn().connect(E.getOut());
+    fwKinOdom.getIn().connect(Ed.getOut());
 
     // Add blocks to timedomain
-    timedomain.addBlock(q1);
-    timedomain.addBlock(g);
-    timedomain.addBlock(motorVoltageSetpoint);
-    timedomain.addBlock(motor);
+    timedomain.addBlock(E1);
+    timedomain.addBlock(E2);
+    timedomain.addBlock(E);
+    timedomain.addBlock(Ed);
+    timedomain.addBlock(fwKinOdom);
 
     // Add timedomain to executor
     eeros::Executor::instance().add(timedomain);

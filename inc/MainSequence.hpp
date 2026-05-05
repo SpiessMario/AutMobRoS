@@ -7,9 +7,6 @@
 #include "MyRobotSafetyProperties.hpp"
 #include "ControlSystem.hpp"
 #include <eeros/sequencer/Wait.hpp>
-#include "customSteps/setMotorVoltage.hpp"
-#include "customSequences/orientationException.hpp"
-#include <eeros/sequencer/Monitor.hpp>
 
 class MainSequence : public eeros::sequencer::Sequence
 {
@@ -22,14 +19,8 @@ public:
           sp(sp),
           cs(cs),
 
-          sleep("Sleep", this),
-          setMotorVoltage("setMotorVoltage", this, cs),
-
-          checkOrientation(0.1, cs),
-          orientationException("Orientation exception", this, cs, checkOrientation),
-          orientationMonitor("Orientation monitor", this, checkOrientation, eeros::sequencer::SequenceProp::resume, &orientationException)
+          sleep("Sleep", this)
     {
-        addMonitor(&orientationMonitor);
         log.info() << "Sequence created: " << name;
     }
 
@@ -37,10 +28,9 @@ public:
     {
         while (eeros::sequencer::Sequencer::running)
         {
-            setMotorVoltage(-0.5);
-            sleep(2.0);
-            setMotorVoltage(0.5);
-            sleep(2.0);
+            sleep(1.0);
+            log.info() << cs.fwKinOdom.getOutGrR().getSignal();
+            log.info() << cs.fwKinOdom.getOutPhi().getSignal();
         }
         return 0;
     }
@@ -51,10 +41,6 @@ private:
     MyRobotSafetyProperties &sp;
 
     eeros::sequencer::Wait sleep;
-    SetMotorVoltage setMotorVoltage;
-    CheckOrientation checkOrientation;
-    OrientationException orientationException;
-    eeros::sequencer::Monitor orientationMonitor;
 };
 
 #endif // MAINSEQUENCE_HPP_
