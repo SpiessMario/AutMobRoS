@@ -6,7 +6,7 @@
 class CustomStepName : public eeros::sequencer::Step
 {
 public:
-    CustomStepName(std::string name, eeros::sequencer::Sequence *caller)
+    CustomStepName(std::string name, eeros::sequencer::Step *caller)
         : eeros::sequencer::Step(name, caller)
     {
         log.info() << "Step created: " << name;

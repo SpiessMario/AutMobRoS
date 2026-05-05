@@ -11,18 +11,17 @@ public:
     MyRobotSafetyProperties(ControlSystem &cs, double dt);
 
     // Define all possible events
-    eeros::safety::SafetyEvent doSystemOff;
+    eeros::safety::SafetyEvent abort;
+    eeros::safety::SafetyEvent shutdown;
     eeros::safety::SafetyEvent doSystemOn;
     eeros::safety::SafetyEvent systemStarted;
+    eeros::safety::SafetyEvent emergency;
+    eeros::safety::SafetyEvent resetEmergency;
     eeros::safety::SafetyEvent powerOn;
     eeros::safety::SafetyEvent powerOff;
     eeros::safety::SafetyEvent startMoving;
     eeros::safety::SafetyEvent stopMoving;
-    eeros::safety::SafetyEvent emergency;
-    eeros::safety::SafetyEvent resetEmergency;
     eeros::safety::SafetyEvent motorsHalted;
-    eeros::safety::SafetyEvent abort;
-
 
     // Defina all possible levels
     eeros::safety::SafetyLevel slSystemOff;

@@ -4,26 +4,26 @@ MyRobotSafetyProperties::MyRobotSafetyProperties(ControlSystem &cs, double dt)
     : cs(cs),
     
       slSystemOff("System is offline"),
-      slShuttingDown("System is shutting down"),
-      slBraking("System is braking"),
-      slStartingUp("System is starting up"),
-      slEmergency("System has an emergency"),
-      slEmergencyBraking("System is braking because of an emergancy"),
+      slShuttingDown("System shutting down"),
+      slBraking("System braking"),
+      slStartingUp("System starting up"),
+      slEmergency("Emergency"),
+      slEmergencyBraking("System halting"),
       slSystemOn("System is online"),
-      slMotorPowerOn("System is online and motors are enabled/powered"),
-      slSystemMoving("System is in motion"),
+      slMotorPowerOn("Motors powered"),
+      slSystemMoving("System moving"),
 
-      doSystemOn("Startup the system"),
-      doSystemOff("Shut down the system"),
-      systemStarted("System if finnished booting (ready)"),
-      powerOn("Enable the motors"),
-      powerOff("Disable the motors"),
-      startMoving("Set robot in motion"),
-      stopMoving("Bring the robot to a stop"),
-      emergency("An emergancy has occured"),
-      resetEmergency("Emergency is handled. There is no more emergency"),
-      motorsHalted("Motors stoped moving"),
-      abort("Preparing for/Starting system shut down")
+      abort("Abort"),
+      shutdown("Shutdown"),
+      doSystemOn("Do system on"),
+      systemStarted("System started"),
+      emergency("Emergency"),
+      resetEmergency("Reset emergency"),
+      powerOn("Power on"),
+      powerOff("Power off"),
+      startMoving("Start moving"),
+      stopMoving("Stop moving"),
+      motorsHalted("Motors halted")
 {
     eeros::hal::HAL &hal = eeros::hal::HAL::instance();
 
@@ -52,17 +52,17 @@ MyRobotSafetyProperties::MyRobotSafetyProperties(ControlSystem &cs, double dt)
 
     // Add events to individual safety levels
     slSystemOff.addEvent(doSystemOn, slStartingUp, kPublicEvent);
-    slShuttingDown.addEvent(doSystemOff, slSystemOff, kPublicEvent);
-    slBraking.addEvent(motorsHalted, slShuttingDown, kPublicEvent);
-    slStartingUp.addEvent(systemStarted, slSystemOn, kPublicEvent);
-    slEmergency.addEvent(resetEmergency, slSystemOn, kPublicEvent);
-    slEmergencyBraking.addEvent(motorsHalted, slEmergency, kPublicEvent);
+    slShuttingDown.addEvent(shutdown, slSystemOff, kPrivateEvent);
+    slBraking.addEvent(motorsHalted, slShuttingDown, kPrivateEvent);
+    slStartingUp.addEvent(systemStarted, slSystemOn, kPrivateEvent);
+    slEmergency.addEvent(resetEmergency, slSystemOn, kPrivateEvent);
+    slEmergencyBraking.addEvent(motorsHalted, slEmergency, kPrivateEvent);
     slSystemOn.addEvent(powerOn, slMotorPowerOn, kPublicEvent);
-    slMotorPowerOn.addEvent(powerOff, slSystemOn, kPublicEvent);
     slMotorPowerOn.addEvent(startMoving, slSystemMoving, kPublicEvent);
-    slSystemMoving.addEvent(abort, slBraking, kPublicEvent);
+    slMotorPowerOn.addEvent(powerOff, slSystemOn, kPublicEvent);
+    slSystemMoving.addEvent(stopMoving, slMotorPowerOn, kPublicEvent);
     slSystemMoving.addEvent(emergency, slEmergencyBraking, kPublicEvent);
-    slSystemMoving.addEvent(stopMoving, slMotorPowerOn, kPublicEvent);   
+    slSystemMoving.addEvent(abort, slBraking, kPublicEvent);
 
     // Add events to multiple safety levels
     // addEventToAllLevelsBetween(lowerLevel, upperLevel, event, targetLevel, kPublicEvent/kPrivateEvent);
@@ -73,7 +73,7 @@ MyRobotSafetyProperties::MyRobotSafetyProperties(ControlSystem &cs, double dt)
     slSystemOff.setInputActions({           ignore(buttonPause),                    ignore(buttonMode) });
     slShuttingDown.setInputActions({        ignore(buttonPause),                    ignore(buttonMode) });
     slBraking.setInputActions({             ignore(buttonPause),                    ignore(buttonMode) });
-    slStartingUp.setInputActions({           ignore(buttonPause),                    ignore(buttonMode) });
+    slStartingUp.setInputActions({          ignore(buttonPause),                    ignore(buttonMode) });
     slEmergency.setInputActions({           ignore(buttonPause),                    check(buttonMode, false, resetEmergency) });
     slEmergencyBraking.setInputActions({    ignore(buttonPause),                    ignore(buttonMode) });
     slSystemOn.setInputActions({            check(buttonPause, false, emergency),   ignore(buttonMode) });
@@ -98,7 +98,7 @@ MyRobotSafetyProperties::MyRobotSafetyProperties(ControlSystem &cs, double dt)
 
     slShuttingDown.setLevelAction([&](SafetyContext *privateContext) {
         cs.timedomain.stop();
-        privateContext->triggerEvent(doSystemOff);
+        privateContext->triggerEvent(shutdown);
     });
 
     slBraking.setLevelAction([&](SafetyContext *privateContext) {
@@ -121,24 +121,24 @@ MyRobotSafetyProperties::MyRobotSafetyProperties(ControlSystem &cs, double dt)
     });
 
     slSystemOn.setLevelAction([&, dt](SafetyContext *privateContext) {
-        if (slSystemOn.getNofActivations()*dt >= 1)   // wait 1 sec
+        /*if (slSystemOn.getNofActivations()*dt >= 1)   // wait 1 sec
         {
             privateContext->triggerEvent(powerOn);
-        }
+        }*/
     });
 
     slMotorPowerOn.setLevelAction([&, dt](SafetyContext *privateContext) {
-        if (slMotorPowerOn.getNofActivations()*dt >= 5)   // wait 5 sec
+        /*if (slMotorPowerOn.getNofActivations()*dt >= 5)   // wait 5 sec
         {
             privateContext->triggerEvent(startMoving);
-        }
+        }*/
     });
 
     slSystemMoving.setLevelAction([&, dt](SafetyContext *privateContext) {
-        if (slSystemMoving.getNofActivations()*dt >= 5)   // wait 5 sec
+        /*if (slSystemMoving.getNofActivations()*dt >= 5)   // wait 5 sec
         {
             privateContext->triggerEvent(stopMoving);
-        }
+        }*/
     });
 
     // Define entry level
